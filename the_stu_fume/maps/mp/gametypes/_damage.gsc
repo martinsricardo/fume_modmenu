@@ -620,6 +620,16 @@ PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWe
 	if ( isDefined( attacker ) )
 		attacker checkKillSteal( victim );
 	
+	if ( isDefined( attacker ) && isPlayer( attacker ) && attacker != victim && level.gameType != "sd" )
+	{
+		if ( getDvarInt( "function_killdistance" ) == 1 )
+		{
+			distance_units = distance( victim.origin, attacker.origin );
+			distance_meters = int( distance_units / 39.37 );
+			attacker iPrintLn( "[^1" + distance_meters + "m's^7]" );
+		}
+	}
+	
 	// obituary
 	obituary( victim, attacker, sWeapon, sMeansOfDeath );
 

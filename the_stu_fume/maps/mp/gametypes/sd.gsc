@@ -261,6 +261,15 @@ onSpawnPlayer()
 onPlayerKilled(eInflictor, attacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration, killId)
 {
 	thread checkAllowSpectating();
+
+	if (isDefined(attacker) && isPlayer(attacker) && attacker != self)
+	{
+		distance_units  = distance(self.origin, attacker.origin);
+		distance_meters = int(distance_units / 39.37);
+		wait 0.07;
+		if (getDvarInt("function_killdistance") == 1)
+			attacker iPrintLn("[^1" + distance_meters + "m's^7]");
+	}
 }
 
 

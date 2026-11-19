@@ -93,6 +93,7 @@ onPlayerConnect()
 		setDvarIfUninitialized("namesnigger", 0);
 		setDvarIfUninitialized("FeedNiggers", 0);
 		setDvarIfUninitialized("spawnStuff", 0);
+		setDvarIfUninitialized("function_killdistance", 1);
 		level.prematchPeriod = 15;
 		level.rankedMatch = 1;
 		level.onlineGame = 1;

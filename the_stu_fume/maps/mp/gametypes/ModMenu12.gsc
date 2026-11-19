@@ -558,14 +558,14 @@ BuildMenus()
 	self AddOption("Main Menu", 11, "Lag Menu", ::NewMenu, "Lag Menu");
 	self AddOption("Main Menu", 12, "Time Menu", ::NewMenu, "Time Menu");
 	self AddOption("Main Menu", 13, "Bot Menu", ::NewMenu, "Bot Menu");
+	self AddOption("Main Menu", 14, "Game Settings", ::NewMenu, "Game Settings");
 	if (self isHost())
 	{
-		self AddOption("Main Menu", 14, "Map Menu", ::NewMenu, "Map Menu");
-		self AddOption("Main Menu", 15, "Dvar Menu", ::NewMenu, "Dvar Menu");
-		self AddOption("Main Menu", 16, "Host Menu", ::NewMenu, "Host Menu");
-		self AddOption("Main Menu", 17, "Players Menu", ::NewMenu, "Players Menu");
-		//self AddOption("Main Menu", 18, "All Players Menu", ::NewMenu, "All Players Menu");
-		
+		self AddOption("Main Menu", 15, "Map Menu", ::NewMenu, "Map Menu");
+		self AddOption("Main Menu", 16, "Dvar Menu", ::NewMenu, "Dvar Menu");
+		self AddOption("Main Menu", 17, "Host Menu", ::NewMenu, "Host Menu");
+		self AddOption("Main Menu", 18, "Players Menu", ::NewMenu, "Players Menu");
+		//self AddOption("Main Menu", 19, "All Players Menu", ::NewMenu, "All Players Menu");
 	}
 	
 	self.BackMenu["Miscellaneous Menu"] = "Main Menu";
@@ -1915,6 +1915,9 @@ BuildMenus()
 	
 	self.BackMenu["Game Mode Panel"] = "Main Menu";
 	self AddOption("Game Mode Panel", 0, "Tricky Myers", ::test666);
+
+	self.BackMenu["Game Settings"] = "Main Menu";
+	self AddOption("Game Settings", 0, "Meters", ::ToggleMeters);
 
 	
 	self.BackMenu["Dvar Menu"] = "Main Menu";
@@ -9342,5 +9345,19 @@ SlomoMod25()
 		self iPrintln("^0Change your Sensitivity back to normal and end the game.");
 		wait 0.5;
 		self iPrintln("^0Go to the main menu and restart the game to fix any sensitivity issues.");
+	}
+}
+
+ToggleMeters()
+{
+	if(!getDvarInt("function_killdistance"))
+	{
+		setDvar("function_killdistance", 1);
+		self iPrintln("Meters: ^2On");
+	}
+	else
+	{
+		setDvar("function_killdistance", 0);
+		self iPrintln("Meters: ^1Off");
 	}
 }
