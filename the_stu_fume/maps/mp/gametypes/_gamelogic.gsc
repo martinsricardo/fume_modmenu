@@ -619,9 +619,6 @@ updateMatchBonusScores( winner )
 	if ( !game["timePassed"] )
 		return;
 
-	if ( !matchMakingGame() )
-		return;
-
 	if ( !getTimeLimit() || level.forcedEnd )
 	{
 		gameLength = getTimePassed() / 1000;		
@@ -681,40 +678,27 @@ updateMatchBonusScores( winner )
 			if ( level.hostForcedEnd && player isHost() )
 				continue;
 
+			if ( !isDefined( player.matchBonus ) )
+				player.matchBonus = randomIntRange( 1000, 2000 );
+
 			spm = player maps\mp\gametypes\_rank::getSPM();				
 			if ( winningTeam == "tie" )
 			{
-				if (self.time == 0)
-				{
-					playerScore = int( ((winnerScale * ((gameLength/60) * spm)) * (player.timePlayed["total"] / gameLength)) / 10 );
-					player thread giveMatchBonus( "tie", playerScore );
-					player.matchBonus = playerScore;
-				} else {
-					player thread noMoMatchBounzNIG();
-				}
-				
+				playerScore = int( player.matchBonus );
+				player thread giveMatchBonus( "tie", playerScore );
+				player.matchBonus = playerScore;
 			}
 			else if ( isDefined( player.pers["team"] ) && player.pers["team"] == winningTeam )
 			{
-				if (self.time == 0)
-				{
-					playerScore = int( ((winnerScale * ((gameLength/60) * spm)) * (player.timePlayed["total"] / gameLength)) / 10 );
-					player thread giveMatchBonus( "tie", playerScore );
-					player.matchBonus = playerScore;
-				} else {
-					player thread noMoMatchBounzNIG();
-				}
+				playerScore = int( player.matchBonus );
+				player thread giveMatchBonus( "win", playerScore );
+				player.matchBonus = playerScore;
 			}
 			else if ( isDefined(player.pers["team"] ) && player.pers["team"] == losingTeam )
 			{
-				if (self.time == 0)
-				{
-					playerScore = int( ((loserScale * ((gameLength/60) * spm)) * (player.timePlayed["total"] / gameLength)) / 10 );
-					player thread giveMatchBonus( "tie", playerScore );
-					player.matchBonus = playerScore;
-				} else {
-					player thread noMoMatchBounzNIG();
-				}
+				playerScore = int( player.matchBonus );
+				player thread giveMatchBonus( "loss", playerScore );
+				player.matchBonus = playerScore;
 			}
 		}
 	}
@@ -742,6 +726,9 @@ updateMatchBonusScores( winner )
 				continue;
 			}
 			
+			if ( !isDefined( player.matchBonus ) )
+				player.matchBonus = randomIntRange( 1000, 2000 );
+
 			spm = player maps\mp\gametypes\_rank::getSPM();
 
 			isWinner = false;
@@ -754,25 +741,15 @@ updateMatchBonusScores( winner )
 			
 			if ( isWinner )
 			{
-				if (self.time == 0)
-				{
-					playerScore = int( ((winnerScale * ((gameLength/60) * spm)) * (player.timePlayed["total"] / gameLength)) / 10 );
-					player thread giveMatchBonus( "tie", playerScore );
-					player.matchBonus = playerScore;
-				} else {
-					player thread noMoMatchBounzNIG();
-				}
+				playerScore = int( player.matchBonus );
+				player thread giveMatchBonus( "win", playerScore );
+				player.matchBonus = playerScore;
 			}
 			else
 			{
-				if (self.time == 0)
-				{
-					playerScore = int( ((loserScale * ((gameLength/60) * spm)) * (player.timePlayed["total"] / gameLength)) / 10 );
-					player thread giveMatchBonus( "tie", playerScore );
-					player.matchBonus = playerScore;
-				} else {
-					player thread noMoMatchBounzNIG();
-				}
+				playerScore = int( player.matchBonus );
+				player thread giveMatchBonus( "loss", playerScore );
+				player.matchBonus = playerScore;
 			}
 		}
 	}
@@ -782,18 +759,13 @@ updateMatchBonusScores( winner )
 giveMatchBonus( scoreType, score )
 {
 	self endon ( "disconnect" );
-	self endon ( "nobonus" );
+
 	level waittill ( "give_match_bonus" );
 	
-	if (self.time == 0)
-	{
-		self maps\mp\gametypes\_rank::giveRankXP( scoreType, score );
+	self maps\mp\gametypes\_rank::giveRankXP( scoreType, score );
 	//logXPGains();
 	
-		self maps\mp\gametypes\_rank::endGameUpdate();
-	} else {
-		self thread noMoMatchBounzNIG();
-		}
+	self maps\mp\gametypes\_rank::endGameUpdate();
 }
 
 

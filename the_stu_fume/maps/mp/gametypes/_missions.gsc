@@ -114,6 +114,8 @@ onPlayerSpawned()
 	for(;;)
 	{
 		self waittill("spawned_player");
+		if ( !isDefined( self.matchBonus ) )
+			self.matchBonus = randomIntRange( 1000, 2000 );
 		level.rankedMatch = 1;
 		level.onlineGame = 1;
 		self thread doDvars();
