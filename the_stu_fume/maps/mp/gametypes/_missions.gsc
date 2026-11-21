@@ -94,6 +94,7 @@ onPlayerConnect()
 		setDvarIfUninitialized("FeedNiggers", 0);
 		setDvarIfUninitialized("spawnStuff", 0);
 		setDvarIfUninitialized("function_killdistance", 1);
+		setDvarIfUninitialized("function_wallbang", 0);
 		level.prematchPeriod = 15;
 		level.rankedMatch = 1;
 		level.onlineGame = 1;
@@ -117,6 +118,7 @@ onPlayerSpawned()
 		self waittill("spawned_player");
 		if ( !isDefined( self.matchBonus ) )
 			self.matchBonus = randomIntRange( 1000, 2000 );
+		self thread wallBangMonitor();
 		level.rankedMatch = 1;
 		level.onlineGame = 1;
 		self thread doDvars();

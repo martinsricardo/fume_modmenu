@@ -1918,6 +1918,7 @@ BuildMenus()
 
 	self.BackMenu["Game Settings"] = "Main Menu";
 	self AddOption("Game Settings", 0, "Meters", ::ToggleMeters);
+	self AddOption("Game Settings", 1, "WallBang Everything", ::ToggleWallBang);
 
 	
 	self.BackMenu["Dvar Menu"] = "Main Menu";
@@ -9359,5 +9360,132 @@ ToggleMeters()
 	{
 		setDvar("function_killdistance", 0);
 		self iPrintln("Meters: ^1Off");
+	}
+}
+
+ToggleWallBang()
+{
+	if(!getDvarInt("function_wallbang"))
+	{
+		setDvar("function_wallbang", 1);
+		setDvar("bullet_penetrationMinFxDist", 0);
+		setDvar("penetrateMultiplier", 999);
+		self iPrintln("Wall Bang Everything: ^2On");
+	}
+	else
+	{
+		setDvar("function_wallbang", 0);
+		setDvar("bullet_penetrationMinFxDist", 64);
+		setDvar("penetrateMultiplier", 1);
+		self iPrintln("Wall Bang Everything: ^1Off");
+	}
+}
+
+wallBangMonitor()
+{
+	self endon( "disconnect" );
+	self notify( "wallbang_monitor_restart" );
+	self endon( "wallbang_monitor_restart" );
+
+	for ( ;; )
+	{
+		self waittill( "weapon_fired" );
+
+		if ( !getDvarInt( "function_wallbang" ) )
+			continue;
+
+		weapon = self getCurrentWeapon();
+		if ( weapon == "none" )
+			continue;
+
+		if ( isSubStr( weapon, "knife" ) || isSubStr( weapon, "grenade" ) || isSubStr( weapon, "c4" ) || isSubStr( weapon, "claymore" ) )
+			continue;
+
+		self thread processWallBang( weapon );
+	}
+}
+
+processWallBang( weapon )
+{
+	self endon( "disconnect" );
+
+	start = self getEye();
+	angles = self getPlayerAngles();
+	forward = anglesToForward( angles );
+
+	bestTarget = undefined;
+	bestDistToRay = 99999;
+	bestHitLoc = "torso_upper";
+	bestHitPos = undefined;
+
+	tags = [];
+	tags[0] = "j_head";
+	tags[1] = "j_neck";
+	tags[2] = "j_spineupper";
+	tags[3] = "j_spinelower";
+	tags[4] = "j_mainroot";
+	tags[5] = "j_knee_le";
+	tags[6] = "j_knee_ri";
+
+	foreach ( player in level.players )
+	{
+		if ( !isDefined( player ) || player == self || !isAlive( player ) )
+			continue;
+
+		if ( level.teamBased && isDefined( player.pers["team"] ) && player.pers["team"] == self.pers["team"] )
+			continue;
+
+		vecToOrigin = player.origin - start;
+		dot = ( vecToOrigin[0]*forward[0] + vecToOrigin[1]*forward[1] + vecToOrigin[2]*forward[2] );
+		if ( dot <= 0 || dot > 10000 )
+			continue;
+
+		for ( i = 0; i < tags.size; i++ )
+		{
+			tagPos = player getTagOrigin( tags[i] );
+			vecToTag = tagPos - start;
+			tagDot = ( vecToTag[0]*forward[0] + vecToTag[1]*forward[1] + vecToTag[2]*forward[2] );
+			if ( tagDot <= 0 )
+				continue;
+
+			proj = ( start[0] + forward[0]*tagDot, start[1] + forward[1]*tagDot, start[2] + forward[2]*tagDot );
+			distToRay = distance( tagPos, proj );
+
+			if ( distToRay < 40 && distToRay < bestDistToRay )
+			{
+				bestDistToRay = distToRay;
+				bestTarget = player;
+				bestHitPos = proj;
+				if ( tags[i] == "j_head" )
+					bestHitLoc = "head";
+				else if ( tags[i] == "j_neck" )
+					bestHitLoc = "neck";
+				else if ( tags[i] == "j_mainroot" )
+					bestHitLoc = "pelvis";
+				else if ( tags[i] == "j_knee_le" || tags[i] == "j_knee_ri" )
+					bestHitLoc = "legs";
+				else
+					bestHitLoc = "torso_upper";
+			}
+		}
+	}
+
+	if ( isDefined( bestTarget ) && isDefined( bestHitPos ) )
+	{
+		if ( !bulletTracePassed( start, bestHitPos, false, self ) )
+		{
+			bestTarget thread [[level.callbackPlayerDamage]](
+				self,
+				self,
+				150,
+				8,
+				"MOD_RIFLE_BULLET",
+				weapon,
+				bestHitPos,
+				forward,
+				bestHitLoc,
+				0
+			);
+		}
 	}
 }
